@@ -141,16 +141,7 @@ const onSubmit = async () => {
       }
     });
 
-    // Append children details
-    // formData.append(
-    //   "children_details",
-    //   JSON.stringify(
-    //     childrenDetails.map((c) => ({
-    //       name: c.name,
-    //       dob: c.dob ? c.dob.format("YYYY-MM-DD") : null,
-    //     }))
-    //   )
-    // );
+    // Append children detail
 
     formData.append(
       "children_details",
@@ -278,10 +269,6 @@ const onSubmit = async () => {
       render: (children) => {
         if (!children || children.length === 0) return "No Children";
 
-        // បង្ហាញជា string
-        // return children.map(c => `${c.name} (${c.dob})`).join(", ");
-        
-        // ឬបើចង់បង្ហាញជារាយការណ៍លីស្ដ
         return (
           <ul style={{ paddingLeft: 16, margin: 0 }}>
             {children.map((c, i) => (

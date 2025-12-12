@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
 import {
+  BookOutlined,
   DesktopOutlined,
   FileOutlined,
+  HighlightOutlined,
+  LogoutOutlined,
   PieChartOutlined,
   SettingOutlined,
+  StarOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
-import { Breadcrumb, Flex, Layout, Menu, theme } from 'antd';
+import { Avatar, Breadcrumb, Col, Flex, Layout, Menu, Row, theme } from 'antd';
 import { Outlet, useLocation, useNavigate } from "react-router-dom";   // <-- import Outlet
 // import AvatarDropdown from '../profile/AvatarDropdown';
 import { AiOutlineFundProjectionScreen } from 'react-icons/ai';
@@ -13,6 +18,9 @@ import { PiStudent } from 'react-icons/pi';
 import { IoCodeSlash } from 'react-icons/io5';
 import { SiReaddotcv } from 'react-icons/si';
 import logo from '../../assets/logo/HRM_system.png';
+import { IoMdLogOut } from 'react-icons/io';
+import { FaChalkboardTeacher, FaUserTie } from 'react-icons/fa';
+import { GiSkills } from 'react-icons/gi';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -21,12 +29,15 @@ function getItem(label, key, icon, children) {
 }
 
 const items = [
-    getItem('Dashboard', '/', <PieChartOutlined />),
-    getItem('Personnel', '/personnel',<SiReaddotcv />),
-    getItem('Training', '/training',<SiReaddotcv />),
-    getItem('Skill', '/skill',<SiReaddotcv />),
- 
- 
+    getItem("Dashboard", "/", <PieChartOutlined />),
+    getItem("Personnel", "/personnel", <UserOutlined />),
+    getItem("Training", "/training", <BookOutlined />),
+    getItem("Skill", "/skill", <HighlightOutlined />),
+    getItem(
+    <span style={{ color: "red", fontWeight: 600 }}>Logout</span>,
+    "/logout",
+    <LogoutOutlined style={{ color: "red" }} />
+    )   
   
 ];
 
@@ -60,11 +71,29 @@ const MainLayout = () => {
       </Sider>
       <Layout>
         <Header style={{ padding: 0, background: colorBgContainer }}>
-          <Flex align='center' justify='space-between' style={{padding:'0px 18px',height:'60px'}}>
-            <h3 style={{fontSize:20 ,fontWeight:'600' }}>HRM System</h3>
-            {/* <AvatarDropdown /> */}
+          <Flex
+              align="center"
+              justify="space-between"
+              style={{ padding: "0 18px", height: "60px" }}
+            >
+              <h3 style={{ fontSize: 20, fontWeight: 600 }}>HRM System</h3>
 
-          </Flex>
+              {/* Right Section */}
+              <Flex align="center" gap={10} style={{ paddingRight: 10, paddingBottom:2, paddingTop:2 }}>
+                <Flex vertical    style={{ textAlign: "left", lineHeight: 1 }}>
+                  <div style={{ fontSize: 18, fontWeight: 600 ,marginBottom:5 }}>Admin</div>
+                  <div style={{ fontSize: 14, fontWeight: 400 ,opacity: 0.8 }}>Admin123@gmail.com</div>
+                </Flex>
+                  
+                <Avatar size={50} src="https://i.pinimg.com/736x/57/b6/a8/57b6a86d0cb375fa3a9e38c2c4389d21.jpg"  
+                  style={{
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                    borderRadius: "50%", // ensure circle
+                  }}/>
+              </Flex>
+
+            </Flex>
+
         </Header>
         <Content style={{ margin: '0 16px' }}>
           {/* <Breadcrumb style={{ margin: '16px 0' }} items={[{ title: 'User' }, { title: 'Bill' }]} /> */}
@@ -82,7 +111,7 @@ const MainLayout = () => {
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-          LIk Dev. ©{new Date().getFullYear()} Created by ❤️🧑‍💻
+          Dev. ©{new Date().getFullYear()} Created by ❤️🧑‍💻
         </Footer>
       </Layout>
     </Layout>
