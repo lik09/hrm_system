@@ -15,7 +15,7 @@ RUN npm install
 COPY . .
 
 # Build React assets for production
-RUN npm run prod
+RUN npm run build
 
 
 # ================================
