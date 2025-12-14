@@ -11,16 +11,14 @@ class PersonnelController extends Controller
     // List all personnels
     public function index()
     {
-        //return Personnel::with(['trainings','skills','leaves','alerts'])->get();
-        return Personnel::all();
-        
+        return Personnel::with(['trainings','skills','leaves','alerts'])->get();
     }
 
-    // Create new personnel
+    // Create or update personnel
     public function store(Request $request)
     {
         $data = $request->validate([
-            'service_number' => 'required|unique:personnels',
+            'service_number' => 'required|unique:personnels,service_number,' . ($request->id ?? 'NULL') . ',id',
             'full_name_kh' => 'required|string',
             'full_name_en' => 'required|string',
             'rank' => 'required|string',
@@ -28,12 +26,11 @@ class PersonnelController extends Controller
             'position' => 'required|string',
             'date_of_birth' => 'required|date',
             'date_joined' => 'required|date',
-            
             'marital_status' => 'nullable|string',
             'spouse_name' => 'nullable|string',
             'spouse_dob' => 'nullable|date',
             'num_children' => 'nullable|integer|min:0',
-            'children_details' => 'nullable|string',
+            'children_details' => 'nullable|json',
             'contact' => 'nullable|string',
             'address' => 'nullable|string',
             'next_of_kin' => 'nullable|string',
@@ -45,29 +42,28 @@ class PersonnelController extends Controller
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-    if ($request->children_details) {
-        $data['children_details'] = json_decode($request->children_details, true);
-    } else {
-        $data['children_details'] = [];
-    }
-        // Handle photo upload / remove
-    if ($request->hasFile('photo')) {
-        $file = $request->file('photo');
-        $filename = time().'_'.$file->getClientOriginalName();
-        $path = $file->storeAs('personnel_photos', $filename, 'public');
-        $data['photo'] = $path;
-    } elseif ($request->photo === '') {
-        // User wants to remove existing photo
-        if (isset($request->editing_photo) && $request->editing_photo && file_exists(storage_path('app/public/' . $request->editing_photo))) {
-            unlink(storage_path('app/public/' . $request->editing_photo));
+        // Decode JSON children_details
+        if (!empty($request->children_details)) {
+            $data['children_details'] = json_decode($request->children_details, true);
+        } else {
+            $data['children_details'] = [];
         }
-        $data['photo'] = null;
-    }
 
-    return Personnel::updateOrCreate(
-        ['id' => $request->id ?? null],
-        $data
-    );
+        // Handle photo
+        if ($request->hasFile('photo')) {
+            if ($request->id) {
+                $personnel = Personnel::find($request->id);
+                if ($personnel && $personnel->photo && Storage::disk('public')->exists($personnel->photo)) {
+                    Storage::disk('public')->delete($personnel->photo);
+                }
+            }
+            $file = $request->file('photo');
+            $filename = time().'_'.$file->getClientOriginalName();
+            $path = $file->storeAs('personnel_photos', $filename, 'public');
+            $data['photo'] = $path;
+        }
+
+        return Personnel::updateOrCreate(['id' => $request->id ?? null], $data);
     }
 
     // Show single personnel
@@ -90,34 +86,31 @@ class PersonnelController extends Controller
             'marital_status' => 'nullable|string',
             'spouse_name' => 'nullable|string',
             'spouse_dob' => 'nullable|date',
-            'num_children' => 'nullable|integer',
-            'children_details' => 'nullable', // ← FIX
+            'num_children' => 'nullable|integer|min:0',
+            'children_details' => 'nullable|json',
             'contact' => 'nullable|string',
             'address' => 'nullable|string',
             'next_of_kin' => 'nullable|string',
             'education_level' => 'nullable|string',
-            'blood_type' => 'nullable|string',
-            'medical_category' => 'nullable|string',
+            'blood_type' => 'nullable|string|max:5',
+            'medical_category' => 'nullable|string|max:2',
             'notes' => 'nullable|string',
             'status' => 'nullable|in:active,retired,resigned',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Decode JSON children_details
-        if ($request->children_details) {
+        if (!empty($request->children_details)) {
             $data['children_details'] = json_decode($request->children_details, true);
         }
 
-        // If new photo uploaded
+        // Handle photo
         if ($request->hasFile('photo')) {
             if ($personnel->photo && Storage::disk('public')->exists($personnel->photo)) {
                 Storage::disk('public')->delete($personnel->photo);
             }
-
             $file = $request->file('photo');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $path = $file->storeAs('personnel_photos', $filename, 'public');
-
             $data['photo'] = $path;
         }
 
@@ -125,22 +118,17 @@ class PersonnelController extends Controller
         return $personnel;
     }
 
-
     // Delete personnel
     public function destroy(Personnel $personnel)
     {
-        // Capture deleted data
         $deletedPersonnel = $personnel->toArray();
 
-        // Delete photo from storage
         if ($personnel->photo && Storage::disk('public')->exists($personnel->photo)) {
             Storage::disk('public')->delete($personnel->photo);
         }
 
-        // Delete personnel
         $personnel->delete();
 
-        // Return deleted data + message
         return response()->json([
             'deleted' => $deletedPersonnel,
             'message' => "Personnel deleted successfully!"

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-
+use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
@@ -30,10 +30,12 @@ return new class extends Migration {
             $table->string('medical_category',2)->nullable();
             $table->text('notes')->nullable();
             
-            $table->enum('status',['active','retired','resigned'])->default('active');
+            // Postgres & MySQL compatible enum
+            $table->string('status')->default('active');
 
             $table->timestamps();
         });
+         DB::statement("ALTER TABLE personnels ADD CONSTRAINT status_check CHECK (status IN ('active','retired','resigned'))");
     }
 
     public function down(): void
