@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('personnel_id')->constrained()->onDelete('cascade');
             $table->string('course_name');
-            $table->enum('course_category', ['Basic','Advanced','Specialized','Foreign']);
+            $table->enum('course_category', ['Basic','Advanced','Intermediate','Specialized','Foreign']);
             $table->string('location')->nullable();
             $table->string('institution')->nullable();
             $table->date('start_date');

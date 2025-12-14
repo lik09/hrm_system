@@ -33,7 +33,7 @@ class PersonnelController extends Controller
             'spouse_name' => 'nullable|string',
             'spouse_dob' => 'nullable|date',
             'num_children' => 'nullable|integer|min:0',
-            'children_details' => 'nullable|array',
+            'children_details' => 'nullable|string',
             'contact' => 'nullable|string',
             'address' => 'nullable|string',
             'next_of_kin' => 'nullable|string',
@@ -45,15 +45,11 @@ class PersonnelController extends Controller
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Upload photo
-        // if ($request->hasFile('photo')) {
-        //     $file = $request->file('photo');
-        //     $filename = time().'_'.$file->getClientOriginalName();
-        //     $path = $file->storeAs('personnel_photos', $filename, 'public');
-        //     $data['photo'] = $path;
-        // }
-        // return Personnel::create($data);
-
+    if ($request->children_details) {
+        $data['children_details'] = json_decode($request->children_details, true);
+    } else {
+        $data['children_details'] = [];
+    }
         // Handle photo upload / remove
     if ($request->hasFile('photo')) {
         $file = $request->file('photo');

@@ -12,7 +12,7 @@ class Skill extends Model
     protected $fillable = [
         'personnel_id','officer_course','seamanship','navigation_qualified',
         'engineering_level','boarding_team_qualified','diver_qualification',
-        'instructor_qualification','it_cyber_skill','language_en','language_vn',
+        'instructor_qualification','it_cyber_skill','language_en','language_vn','language_th',
         'weapon_rifle','weapon_pistol','weapon_mg','driving_license_military','driving_license_civilian'
     ];
 

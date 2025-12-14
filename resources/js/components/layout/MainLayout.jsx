@@ -51,7 +51,7 @@ const MainLayout = () => {
   const location = useLocation()
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh', overflow: "hidden" }}>
       <Sider collapsible collapsed={collapsed} onCollapse={value => setCollapsed(value)} style={{backgroundColor:'#fff'}}>
         <div style={{cursor: 'pointer'}} onClick={ 
           () => navigate('/')
@@ -70,7 +70,7 @@ const MainLayout = () => {
         />
       </Sider>
       <Layout>
-        <Header style={{ padding: 0, background: colorBgContainer }}>
+        <Header style={{ padding: 0,  height: 60, background: colorBgContainer }}>
           <Flex
               align="center"
               justify="space-between"
@@ -95,15 +95,23 @@ const MainLayout = () => {
             </Flex>
 
         </Header>
-        <Content style={{ margin: '0 16px' }}>
+        <Content style={{
+              margin: "0 16px",
+              height: "calc(100vh - 60px - 70px)", // Header + Footer
+              overflow: "hidden",
+            }}>
           {/* <Breadcrumb style={{ margin: '16px 0' }} items={[{ title: 'User' }, { title: 'Bill' }]} /> */}
           <div
             style={{
-              marginTop:16,
+              marginTop: 16,
               padding: 24,
-              minHeight: 360,
+              height: "100%",
+              overflowY: "auto",
+              overflowX: "hidden",
+              scrollBehavior: "smooth",
               background: colorBgContainer,
               borderRadius: borderRadiusLG,
+              
             }}
           >
             {/* This is where child routes render */}

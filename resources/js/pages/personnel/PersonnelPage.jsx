@@ -19,7 +19,7 @@ import { EditFilled, DeleteFilled, PlusOutlined } from '@ant-design/icons';
 import { request, requestFormData } from '../../utils/request';
 import { config } from '../../utils/config';
 import dayjs from 'dayjs';
-import { headerCellStyle } from '../../utils/helper';
+import { formatDateClient, formatDateTable, headerCellStyle } from '../../utils/helper';
 
 function PersonnelPage() {
   const [state, setState] = useState({ list: [], loading: false });
@@ -90,6 +90,11 @@ function PersonnelPage() {
     setEditing(record);
     const files = toFileList(record.photo);
     
+     // Convert children DOB to dayjs
+    const childrenFormData = (record.children_details || []).map(c => ({
+      name: c.name || '',
+      dob: c.dob ? dayjs(c.dob) : null,
+    }));
 
     form.setFieldsValue({
       ...record,
@@ -101,17 +106,13 @@ function PersonnelPage() {
       spouse_dob: record.spouse_dob ? dayjs(record.spouse_dob) : null,
       photo: files,
       status: record.status || 'active',
+      children_details: childrenFormData,
+
     });
     setFileList(files);
     setMaritalStatus(record.marital_status || 'single');
     setNumChildren(record.num_children || 0);
-    setChildrenDetails(
-      record.children_details?.map(c => ({
-        name: c.name,
-        dob: c.dob ? dayjs(c.dob) : null,
-      })) || []
-    );
-
+    setChildrenDetails(childrenFormData);
     setOpen(true);
   };
 
@@ -120,14 +121,14 @@ function PersonnelPage() {
 const onSubmit = async () => {
   try {
     const values = await form.validateFields();
-     console.log("Show: ",values.children_details);
+  //   console.log("Show: ",values.children_details);
      // ប្រសិន marital_status != 'married', clear spouse & children before send
     if (values.marital_status !== 'married') {
       values.spouse_name = '';
       values.spouse_dob = null;
       values.num_children = 0;
-       form.setFieldsValue({ children_details: [] });
-  setChildrenDetails([]);
+      form.setFieldsValue({ children_details: [] });
+     setChildrenDetails([]);
     }
     const formData = new FormData();
 
@@ -143,17 +144,29 @@ const onSubmit = async () => {
 
     // Append children detail
 
+    // formData.append(
+    //   "children_details",
+    //   JSON.stringify(
+    //     values.marital_status === 'married'
+    //       ? childrenDetails.map((c) => ({
+    //           name: c.name,
+    //           dob: c.dob ? c.dob.format("YYYY-MM-DD") : null,
+    //         }))
+    //       : [] // clear if not married
+    //   )
+    // );
     formData.append(
       "children_details",
       JSON.stringify(
         values.marital_status === 'married'
-          ? childrenDetails.map((c) => ({
-              name: c.name,
-              dob: c.dob ? c.dob.format("YYYY-MM-DD") : null,
-            }))
-          : [] // clear if not married
+          ? (values.children_details || []).map(c => ({
+              name: c.name || '',
+              dob: c.dob ? c.dob.format("YYYY-MM-DD") : null
+          }))
+          : []
       )
     );
+
 
 
     const file = fileList[0];
@@ -205,9 +218,6 @@ const onSubmit = async () => {
 
 
 
-
-
-
   const deletePersonnel = (record) => {
     Modal.confirm({
       title: "Are you sure you want to delete?",
@@ -236,14 +246,15 @@ const onSubmit = async () => {
       dataIndex: "date_of_birth",
       width: 120,
       align: "center",
-      render: dob => dob?.slice(0, 10),
+      render: dob => formatDateClient(dob),
+
     },
     {
       title: "Joined Date",
       dataIndex: "date_joined",
       width: 120,
       align: "center",
-      render: d => d?.slice(0, 10),
+      render: joineDate => formatDateClient(joineDate),
     },
     { title: "Marital Status", 
       dataIndex: "marital_status", 
@@ -259,7 +270,7 @@ const onSubmit = async () => {
     { title: "Spouse DOB", 
       dataIndex: "spouse_dob", 
       align: "center" ,
-      render: d => d?.slice(0, 10),
+      render: sposeDate => formatDateClient(sposeDate),
     },
     { title: "Children", dataIndex: "num_children", width: 100, align: "center" },
     {
@@ -272,7 +283,7 @@ const onSubmit = async () => {
         return (
           <ul style={{ paddingLeft: 16, margin: 0 }}>
             {children.map((c, i) => (
-              <li key={i}>{c.name} - {c.dob}</li>
+              <li key={i}>{c.name} - {formatDateClient(c.dob)}</li>
             ))}
           </ul>
         );
@@ -320,6 +331,20 @@ const onSubmit = async () => {
         return <Tag color={color}>{text}</Tag>;
       },
     },
+      {
+        title: "Created At",
+        dataIndex: "created_at",
+        align:"center",
+        width:180,
+        render:(date)=> formatDateTable(date)
+      },
+      {
+        title: "Updated At",
+        dataIndex: "updated_at",
+        align: "center",
+        width: 180,
+        render:(date)=> formatDateTable(date)
+      },
 
     {
       title: "Actions",
@@ -363,7 +388,7 @@ const onSubmit = async () => {
         okText="Save"
         width={800}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" onFinish={onSubmit}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: 350 }}>
               <Form.Item name="service_number" label="Service Number" rules={[{ required: true }]}>
@@ -388,7 +413,7 @@ const onSubmit = async () => {
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="date_joined" label="Date Joined" rules={[{ required: true }]}>
-                <DatePicker style={{ width: '100%' }} />
+                <DatePicker  style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="contact" label="Contact">
                 <Input />
@@ -417,7 +442,7 @@ const onSubmit = async () => {
                     <Input />
                   </Form.Item>
                   <Form.Item name="spouse_dob" label="Spouse DOB" rules={[{ required: true }]}>
-                    <DatePicker style={{ width: '100%' }} />
+                    <DatePicker format="DD-MM-YYYY" style={{ width: '100%' }} />
                   </Form.Item>
 
                   <Form.Item name="num_children" label="Number of Children">
@@ -427,21 +452,29 @@ const onSubmit = async () => {
                   {numChildren > 0 &&
                     childrenDetails.map((child, index) => (
                       <div key={index} style={{ marginBottom: 16, border: "1px solid #eee", padding: 10 }}>
-                        <Form.Item label={`Child ${index + 1} Name`}>
+                        <Form.Item 
+                            name={['children_details', index, 'name']}
+                            label={`Child ${index + 1} Name`} 
+                            rules={[{ required: true, message: "Child name is required" }]}>
                           <Input
                             value={child.name}
                             onChange={(e) => handleChildChange(index, "name", e.target.value)}
                           />
                         </Form.Item>
-                        <Form.Item label={`Child ${index + 1} DOB`}>
+                        <Form.Item 
+                          name={['children_details', index, 'dob']}
+                          label={`Child ${index + 1} DOB`} rules={[{ required: true, message: "Child DOB is required" }]}>
                           <DatePicker
                             value={child.dob}
                             style={{ width: '100%' }}
+                            format="DD-MM-YYYY"
                             onChange={(date) => handleChildChange(index, "dob", date)}
                           />
                         </Form.Item>
                       </div>
                     ))}
+
+                    
                 </>
               )}
 

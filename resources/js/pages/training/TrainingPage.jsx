@@ -1,46 +1,69 @@
 import React, { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input, DatePicker, Select, Checkbox, Spin } from "antd";
-import axios from "axios";
+import {
+  Table,
+  Button,
+  Modal,
+  Form,
+  Input,
+  DatePicker,
+  Select,
+  Checkbox,
+  Spin,
+  Space,
+  message,
+} from "antd";
 import dayjs from "dayjs";
 import { request } from "../../utils/request";
+import { DeleteFilled, EditFilled, PlusOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
 function TrainingPage() {
-
   const [state, setState] = useState({ list: [], loading: false });
-  const [loading, setLoading] = useState(false);
+  const [personnelList, setPersonnelList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
-
   const [form] = Form.useForm();
 
-  // ---------------- Fetch Trainings ----------------
-
+  // ================= FETCH DATA =================
   useEffect(() => {
-    getList();
+    getTrainings();
+    getPersonnelList();
   }, []);
 
-  const getList = async () => {
+  const getTrainings = async () => {
     setState(prev => ({ ...prev, loading: true }));
-    const res = await request('trainings', 'get');
-    console.log(res);
-    if (Array.isArray(res)) {
-      setState(prev => ({ ...prev, list: res, loading: false }));
-      
-    } else {
+    try {
+      const res = await request("trainings", "get");
+      if (Array.isArray(res)) {
+        setState({ list: res, loading: false });
+      } else {
+        setState(prev => ({ ...prev, loading: false }));
+        message.error("Failed to load trainings");
+      }
+    } catch (err) {
       setState(prev => ({ ...prev, loading: false }));
-      message.error("Failed to load trainings");
+      console.error(err);
     }
   };
 
+  const getPersonnelList = async () => {
+    try {
+      const res = await request("personnels", "get");
+      if (Array.isArray(res)) setPersonnelList(res);
+    } catch (err) {
+      console.error(err);
+      message.error("Failed to load personnel");
+    }
+  };
 
-
-  // ---------------- Open Modal ----------------
+  // ================= MODAL =================
   const openModal = (record = null) => {
     setEditingData(record);
+
     if (record) {
       form.setFieldsValue({
+        personnel_id: record.personnel_id,
         course_name: record.course_name,
         course_category: record.course_category,
         location: record.location,
@@ -53,10 +76,11 @@ function TrainingPage() {
     } else {
       form.resetFields();
     }
+
     setIsModalOpen(true);
   };
 
-  // ---------------- Submit Form ----------------
+  // ================= SUBMIT =================
   const handleOk = async () => {
     try {
       const values = await form.validateFields();
@@ -70,109 +94,100 @@ function TrainingPage() {
       };
 
       if (editingData) {
-        await axios.put(`/api/trainings/${editingData.id}`, payload);
+        await request(`trainings/${editingData.id}`, "put", payload);
+        message.success("Updated successfully");
       } else {
-        await axios.post("/api/trainings", payload);
+        await request("trainings", "post", payload);
+        message.success("Created successfully");
       }
 
-      getList();
       setIsModalOpen(false);
       setEditingData(null);
-    } catch (error) {
-      console.error(error);
+      getTrainings();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // ---------------- Delete ----------------
+  // ================= DELETE =================
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/api/trainings/${id}`);
-      getList();
-    } catch (error) {
-      console.error(error);
+      await request(`trainings/${id}`, "delete");
+      message.success("Deleted");
+      getTrainings();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  // ---------------- Table Columns ----------------
+  // ================= TABLE =================
   const columns = [
-    { title: "#", render: (_, __, index) => index + 1, width: 60 ,align: "center"},
+    { title: "#", render: (_, __, i) => i + 1, width: 60, align: "center" },
     {
       title: "Personnel",
-      dataIndex: ["personnel", "full_name_en"],
-      key: "personnel",
-      render: (_, record) => record.personnel.full_name_en,
+      render: (_, r) => r.personnel?.full_name_en,
     },
     {
-      title: "Course Name",
-      dataIndex: "course_name",
-      key: "course_name",
+      title: "Rank",
+      render: (_, r) => r.personnel?.rank,
     },
-    {
-      title: "Category",
-      dataIndex: "course_category",
-      key: "course_category",
-    },
-    {
-      title: "Location",
-      dataIndex: "location",
-      key: "location",
-    },
+    { title: "Course Name", dataIndex: "course_name" },
+    { title: "Category", dataIndex: "course_category" },
+    { title: "Location", dataIndex: "location" },
+    { title: "Institution", dataIndex: "institution" },
     {
       title: "Start Date",
       dataIndex: "start_date",
-      key: "start_date",
-      render: (date) => dayjs(date).format("YYYY-MM-DD"),
+      render: d => dayjs(d).format("YYYY-MM-DD"),
     },
     {
       title: "End Date",
       dataIndex: "end_date",
-      key: "end_date",
-      render: (date) => dayjs(date).format("YYYY-MM-DD"),
+      render: d => dayjs(d).format("YYYY-MM-DD"),
     },
     {
       title: "Passed",
       dataIndex: "passed",
-      key: "passed",
-      render: (passed) => (passed ? "Yes" : "No"),
+      render: v => (v ? "Yes" : "No"),
     },
     {
       title: "Certificate",
       dataIndex: "certificate",
-      key: "certificate",
-      render: (cert) => (cert ? "Yes" : "No"),
+      render: v => (v ? "Yes" : "No"),
+    },
+    {
+      title: "Certificate File",
+      dataIndex: "certificate_file",
+
     },
     {
       title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <>
-          <Button type="link" onClick={() => openModal(record)}>
-            Edit
-          </Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id)}>
-            Delete
-          </Button>
-        </>
+      width: 120,
+      fixed: "right",
+      align: "center",
+      render: (_, r) => (
+        <Space>
+          <Button type="primary" icon={<EditFilled />} onClick={() => openModal(r)} />
+          <Button danger icon={<DeleteFilled />} onClick={() => handleDelete(r.id)} />
+        </Space>
       ),
     },
   ];
 
+  // ================= UI =================
   return (
-    <div>
-      <h1>Training Page</h1>
-      <Button type="primary" style={{ marginBottom: 16 }} onClick={() => openModal()}>
-        Add Training
-      </Button>
+    <>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 600 }}>Training</h1>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
+          Add Training
+        </Button>
+      </div>
+
       <Spin spinning={state.loading}>
-        <Table
-          dataSource={state.list}
-          columns={columns}
-          rowKey="id"
-          bordered
-        
-        />
+        <Table dataSource={state.list} columns={columns} rowKey="id" bordered scroll={{ x: 1200 }}/>
       </Spin>
-      {/* Modal Form */}
+
       <Modal
         title={editingData ? "Edit Training" : "Add Training"}
         open={isModalOpen}
@@ -181,40 +196,65 @@ function TrainingPage() {
       >
         <Form form={form} layout="vertical">
           <Form.Item
-            label="Course Name"
-            name="course_name"
-            rules={[{ required: true, message: "Please enter course name" }]}
+            name="personnel_id"
+            label="Personnel"
+            rules={[{ required: true }]}
           >
+            <Select placeholder="Select personnel">
+              {personnelList.map(p => (
+                <Option key={p.id} value={p.id}>
+                  {p.full_name_en}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item name="course_name" label="Course Name" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item
-            label="Course Category"
-            name="course_category"
-            rules={[{ required: true, message: "Please select category" }]}
-          >
+          <Form.Item name="course_category" label="Category" rules={[{ required: true }]}>
             <Select>
               <Option value="Basic">Basic</Option>
               <Option value="Intermediate">Intermediate</Option>
+              <Option value="Intermediate">Specialized</Option>
               <Option value="Advanced">Advanced</Option>
             </Select>
           </Form.Item>
 
-          <Form.Item label="Location" name="location">
+          <Form.Item name="location" label="Location">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Institution" name="institution">
+          <Form.Item name="institution" label="Institution">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Start Date" name="start_date">
+          <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
 
-          <Form.Item label="End Date" name="end_date">
+          <Form.Item
+            name="end_date"
+            label="End Date"
+            rules={[
+              { required: true, message: "End date is required" },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const start = getFieldValue("start_date");
+                  if (!start || !value || value.isAfter(start)) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error("End date must be after start date")
+                  );
+                },
+              }),
+            ]}
+          >
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
+
 
           <Form.Item name="passed" valuePropName="checked">
             <Checkbox>Passed</Checkbox>
@@ -225,7 +265,7 @@ function TrainingPage() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }
 

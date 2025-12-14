@@ -18,7 +18,7 @@ class TrainingController extends Controller
     $data = $request->validate([
         'personnel_id'=>'required|exists:personnels,id',
         'course_name'=>'required',
-        'course_category'=>'required|in:Basic,Advanced,Specialized,Foreign',
+        'course_category'=>'required|in:Basic,Advanced,Intermediate,Specialized,Foreign',
         'location'=>'nullable|string',
         'institution'=>'nullable|string',
         'start_date'=>'required|date',
@@ -50,7 +50,7 @@ class TrainingController extends Controller
         $data = $request->validate([
             'personnel_id'      => 'sometimes|exists:personnels,id',
             'course_name'       => 'sometimes|string',
-            'course_category'   => 'sometimes|in:Basic,Advanced,Specialized,Foreign',
+            'course_category'   => 'sometimes|in:Basic,Advanced,Intermediate,Specialized,Foreign',
             'location'          => 'sometimes|nullable|string',
             'institution'       => 'sometimes|nullable|string',
             'start_date'        => 'sometimes|date',

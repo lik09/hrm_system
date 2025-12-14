@@ -16,8 +16,8 @@ class SkillController extends Controller
 {
     $data = $request->validate([
         'personnel_id' => 'required|exists:personnels,id',
-        'officer_course' => 'sometimes|boolean',
-        'seamanship' => 'sometimes|boolean',
+        'officer_course' => 'sometimes|boolean', 
+        'seamanship' => 'sometimes|boolean',  
         'navigation_qualified' => 'sometimes|boolean',
         'engineering_level' => 'sometimes|nullable|integer',
         'boarding_team_qualified' => 'sometimes|boolean',
@@ -26,6 +26,7 @@ class SkillController extends Controller
         'it_cyber_skill' => 'sometimes|string|nullable',
         'language_en' => 'sometimes|string|nullable',
         'language_vn' => 'sometimes|string|nullable',
+        'language_th' => 'sometimes|string|nullable',
         'weapon_rifle' => 'sometimes|boolean',
         'weapon_pistol' => 'sometimes|boolean',
         'weapon_mg' => 'sometimes|boolean',
