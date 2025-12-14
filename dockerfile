@@ -5,24 +5,24 @@ FROM node:18-alpine AS node-builder
 
 WORKDIR /app
 
-# Copy package.json files
-COPY js/package.json js/package-lock.json ./js/
+# Copy only frontend-related files first
+COPY resources/js/package.json resources/js/package-lock.json ./resources/js/
 
-# Install frontend dependencies
-RUN cd js && npm install
+# Install dependencies
+RUN cd resources/js && npm install
 
 # Copy frontend source
-COPY js ./js
+COPY resources/js ./resources/js
 
 # Build React for production
-RUN cd js && npm run build
+RUN cd resources/js && npm run build   # outputs usually to resources/js/dist or public folder depending on vite.config.js
 
 # ================================
 # 2. PHP-FPM + Laravel API
 # ================================
 FROM php:8.2-fpm
 
-# Install system dependencies
+# Install PHP extensions
 RUN apt-get update && apt-get install -y \
     git zip unzip curl libpng-dev libonig-dev libxml2-dev \
     && docker-php-ext-install pdo_mysql pdo_pgsql mbstring tokenizer xml gd
@@ -35,18 +35,16 @@ WORKDIR /var/www/html
 # Copy Laravel backend
 COPY . .
 
-# Copy built React frontend into public/
-COPY --from=node-builder /app/js/dist ./public/js
+# Copy built frontend to public folder
+COPY --from=node-builder /app/resources/js/dist ./public/js
 
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permissions
+# Laravel permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Expose port
 EXPOSE 9000
 
-# Start Laravel API
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=9000"]
