@@ -5,7 +5,8 @@
 // }
 
 export const config = {
-    base_url_api: import.meta.env.VITE_API_URL,
-    image_path: import.meta.env.VITE_IMAGE_PATH,
-    pdf_path: import.meta.env.VITE_PDF_PATH,
-};
+    base_url_api: "https://hrm-system-15.onrender.com/api/",
+    image_path: "https://hrm-system-15.onrender.com/storage/",
+    pdf_path: "https://hrm-system-15.onrender.com/storage/",
+}
+
