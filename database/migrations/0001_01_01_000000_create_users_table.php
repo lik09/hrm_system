@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -22,7 +23,7 @@ return new class extends Migration
 
             // Postgres & MySQL compatible enum
             $table->string('role')->default('User');
-            $table->check("role IN ('Admin','Commander','HR','Officer','User')"); 
+          //  $table->check("role IN ('Admin','Commander','HR','Officer','User')"); 
 
             $table->foreignId('personnel_id')->nullable()->constrained()->onDelete('cascade');
             $table->boolean('is_active')->default(true);
@@ -30,7 +31,7 @@ return new class extends Migration
             $table->timestamps();
 
         });
-
+        DB::statement("ALTER TABLE users ADD CONSTRAINT role_check CHECK (role IN ('Admin','Commander','HR','Officer','User'))");
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
