@@ -17,7 +17,7 @@ RUN npm run build
 # ---------------------------
 FROM php:8.2-cli-bullseye
 
-# Install system deps + PHP extensions
+# Install system deps + PostgreSQL client
 RUN apt-get update && apt-get install -y \
     git \
     zip \
@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libzip-dev \
     libpq-dev \
+    postgresql-client \
     && docker-php-ext-install \
         pdo_mysql \
         pdo_pgsql \
@@ -56,12 +57,11 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-# Copy entrypoint script
+# Copy entrypoint
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Expose Laravel port
+# Expose port (Render will inject PORT)
 EXPOSE 8000
 
-# Start container with entrypoint
 CMD ["/entrypoint.sh"]
