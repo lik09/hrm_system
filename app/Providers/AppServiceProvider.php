@@ -21,10 +21,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Fix for MySQL older versions
         Schema::defaultStringLength(191);
-
-        // Force HTTPS in production
-        if ($this->app->environment('production')) {
-            URL::forceScheme('https');
+        if (app()->environment('production')) {
+                URL::forceScheme('https');
+            }
         }
-    }
 }
