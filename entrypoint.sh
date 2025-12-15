@@ -1,19 +1,19 @@
 #!/bin/bash
 set -e
 
-echo "Waiting for PostgreSQL..."
+echo "Starting Laravel..."
 
-until pg_isready \
-  -h "${DB_HOST}" \
-  -p "${DB_PORT:-5432}" \
-  -U "${DB_USERNAME}"; do
-  sleep 1
-done
+# Clear caches safely
+php artisan config:clear || true
+php artisan route:clear || true
 
-echo "PostgreSQL is ready"
+# Run migrations in background (do NOT block)
+(
+  sleep 5
+  php artisan migrate --force || true
+) &
 
-# Run migrations
-php artisan migrate --force
-
-echo "Starting Laravel server..."
-php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
+# Start server immediately (Render requirement)
+exec php artisan serve \
+  --host=0.0.0.0 \
+  --port="${PORT}"
