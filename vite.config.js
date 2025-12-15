@@ -10,4 +10,8 @@ export default defineConfig({
         }),
         react(),
     ],
+    base: '/', // use relative paths
+    server: {
+        https: true, // optional for local dev HTTPS
+    },
 });
