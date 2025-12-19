@@ -252,7 +252,7 @@ function SkillPage() {
     render: (_, record) => (
       <Space>
         <Button type="primary" icon={<EditFilled />} onClick={()=>openEditModal(record)} />
-        <Button danger icon={<DeleteFilled />} onClick={ ()=>openEditModal(record)}/>
+        <Button danger icon={<DeleteFilled />} onClick={ ()=>deleteSkill(record)}/>
       </Space>
     ),
   },

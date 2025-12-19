@@ -121,7 +121,6 @@ function PersonnelPage() {
 const onSubmit = async () => {
   try {
     const values = await form.validateFields();
-  //   console.log("Show: ",values.children_details);
      // ប្រសិន marital_status != 'married', clear spouse & children before send
     if (values.marital_status !== 'married') {
       values.spouse_name = '';
@@ -144,17 +143,6 @@ const onSubmit = async () => {
 
     // Append children detail
 
-    // formData.append(
-    //   "children_details",
-    //   JSON.stringify(
-    //     values.marital_status === 'married'
-    //       ? childrenDetails.map((c) => ({
-    //           name: c.name,
-    //           dob: c.dob ? c.dob.format("YYYY-MM-DD") : null,
-    //         }))
-    //       : [] // clear if not married
-    //   )
-    // );
     formData.append(
       "children_details",
       JSON.stringify(
@@ -210,9 +198,20 @@ const onSubmit = async () => {
       message.error(res?.message || "Failed to save data");
     }
 
-  } catch (error) {
-    console.error(error);
-    message.error("An error occurred while saving data");
+  } catch (err) {
+    // console.error(err);
+    // ⚠️ err IS response
+    const res = err?.data;
+
+    if (res?.errors) {
+      Object.values(res.errors).forEach(msgs =>
+        msgs.forEach(msg => message.error(msg))
+      );
+    } else if (res?.message) {
+      message.error(res.message);
+    } else {
+      message.error("Failed to save personnel");
+    }
   }
 };
 
@@ -391,28 +390,43 @@ const onSubmit = async () => {
         <Form form={form} layout="vertical" onFinish={onSubmit}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: 350 }}>
-              <Form.Item name="service_number" label="Service Number" rules={[{ required: true }]}>
+              <Form.Item name="service_number" label="Service Number" rules={[{ required: true ,message:'pleace input service number'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="full_name_kh" label="Full Name (KH)" rules={[{ required: true }]}>
+              <Form.Item name="full_name_kh" label="Full Name (KH)" rules={[{ required: true ,message:'pleace input full name khmer'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="full_name_en" label="Full Name (EN)" rules={[{ required: true }]}>
+              <Form.Item name="full_name_en" label="Full Name (EN)" rules={[{ required: true ,message:'pleace input full name english'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="rank" label="Rank" rules={[{ required: true }]}>
+              <Form.Item name="rank" label="Rank" rules={[{ required: true ,message:'pleace input rank'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="unit" label="Unit" rules={[{ required: true }]}>
+              <Form.Item name="unit" label="Unit" rules={[{ required: true ,message:'pleace input unit'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="position" label="Position" rules={[{ required: true }]}>
+              <Form.Item name="position" label="Position" rules={[{ required: true ,message:'pleace input position'}]}>
                 <Input />
               </Form.Item>
-              <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true }]}>
+              <Form.Item name="date_of_birth" label="Date of Birth" rules={[{ required: true ,message:'pleace select date of birth'}]}>
                 <DatePicker style={{ width: '100%' }} />
               </Form.Item>
-              <Form.Item name="date_joined" label="Date Joined" rules={[{ required: true }]}>
+              <Form.Item name="date_joined" label="Date Joined" 
+                rules={[
+                    { required: true, message: "pleace select date joined" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const dob = getFieldValue("date_of_birth");
+                        if (!dob || !value || value.isAfter(dob)) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(
+                          new Error("Date of participation must be much smaller than the date of birth")
+                        );
+                      },
+                    }),
+                  ]}
+                >
                 <DatePicker  style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="contact" label="Contact">

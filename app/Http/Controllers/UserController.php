@@ -11,8 +11,11 @@ class UserController extends Controller
     public function index()
     {
         // Optional: paginate for large datasets
-        return User::with('personnel')->get();
+        return  User::all();
         // return User::with('personnel')->paginate(20);
+        // return User::with('personnel')
+        // ->select('id', 'username', 'name', 'email', 'role', 'is_active', 'created_at')
+        // ->paginate(20);
     }
 
     public function store(Request $request)
@@ -79,6 +82,19 @@ class UserController extends Controller
         $user->update($validated);
 
         return $user;
+    }
+
+    // UserController.php
+    public function changePassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'new_password' => 'required|string|min:6|confirmed', // new_password & new_password_confirmation
+        ]);
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
     }
 
     public function destroy(User $user)

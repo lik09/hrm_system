@@ -125,19 +125,22 @@ function TrainingPage() {
     { title: "#", render: (_, __, i) => i + 1, width: 60, align: "center" },
     {
       title: "Personnel",
+      align: "center",
       render: (_, r) => r.personnel?.full_name_en,
     },
     {
       title: "Rank",
+      align: "center",
       render: (_, r) => r.personnel?.rank,
     },
-    { title: "Course Name", dataIndex: "course_name" },
-    { title: "Category", dataIndex: "course_category" },
-    { title: "Location", dataIndex: "location" },
-    { title: "Institution", dataIndex: "institution" },
+    { title: "Course Name", dataIndex: "course_name" , align: "center"},
+    { title: "Category", dataIndex: "course_category" , align: "center"},
+    { title: "Location", dataIndex: "location" , align: "center"},
+    { title: "Institution", dataIndex: "institution" , align: "center" ,width:150 },
     {
       title: "Start Date",
       dataIndex: "start_date",
+      align: "center",
       render: d => dayjs(d).format("YYYY-MM-DD"),
     },
     {
@@ -148,11 +151,13 @@ function TrainingPage() {
     {
       title: "Passed",
       dataIndex: "passed",
+      align: "center",
       render: v => (v ? "Yes" : "No"),
     },
     {
       title: "Certificate",
       dataIndex: "certificate",
+      align: "center",
       render: v => (v ? "Yes" : "No"),
     },
     {
@@ -174,7 +179,7 @@ function TrainingPage() {
     },
   ];
 
-  // ================= UI =================
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
@@ -198,7 +203,7 @@ function TrainingPage() {
           <Form.Item
             name="personnel_id"
             label="Personnel"
-            rules={[{ required: true }]}
+            rules={[{ required: true ,message:'please select personnel' }]}
           >
             <Select placeholder="Select personnel">
               {personnelList.map(p => (
@@ -209,11 +214,11 @@ function TrainingPage() {
             </Select>
           </Form.Item>
 
-          <Form.Item name="course_name" label="Course Name" rules={[{ required: true }]}>
+          <Form.Item name="course_name" label="Course Name" rules={[{ required: true ,message:'please course name'}]}>
             <Input />
           </Form.Item>
 
-          <Form.Item name="course_category" label="Category" rules={[{ required: true }]}>
+          <Form.Item name="course_category" label="Category" rules={[{ required: true ,message:'please select category'}]}>
             <Select>
               <Option value="Basic">Basic</Option>
               <Option value="Intermediate">Intermediate</Option>
@@ -230,7 +235,7 @@ function TrainingPage() {
             <Input />
           </Form.Item>
 
-          <Form.Item name="start_date" label="Start Date" rules={[{ required: true }]}>
+          <Form.Item name="start_date" label="Start Date" rules={[{ required: true ,message:'please select start date'}]}>
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
 
@@ -238,7 +243,7 @@ function TrainingPage() {
             name="end_date"
             label="End Date"
             rules={[
-              { required: true, message: "End date is required" },
+              { required: true, message: "please select end date" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
                   const start = getFieldValue("start_date");

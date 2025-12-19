@@ -1,20 +1,28 @@
 import axios from "axios";
-import { config } from "./config";
+import { config  } from "./config";
 
 export const request = (url = "", method = "get", data = {}, isFormData = false) => {
-    return axios({
+   const token = localStorage.getItem("token");  
+  return axios({
         url: config.base_url_api + url,
         method: method,
         data: data,
+        withCredentials: true, // ប្រសិនបើចង់ support Sanctum
         headers: {
             "Accept": "application/json",
-            "Content-Type": isFormData ? "multipart/form-data" : "application/json"
+            "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+           ...(token && { "Authorization": `Bearer ${token}` }),
         }
     })
     .then(res => res.data)
     .catch(error => {
         console.log("Axios Error:", error);
-        return { error: true, message: "Request failed" }; // <-- FIXED
+       // ប្រសិនបើ backend return JSON message
+        if (error.response && error.response.data) {
+            throw error.response;  // <-- important, throw to catch block in React
+        } else {
+            throw error; // network error
+        }
     });
 };
 

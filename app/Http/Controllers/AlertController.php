@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Alert;
+use Illuminate\Database\QueryException;
 
 class AlertController extends Controller
 {
@@ -22,7 +23,15 @@ class AlertController extends Controller
             'resolved'=>'nullable|boolean'
         ]);
 
-        return Alert::create($data);
+        try {
+            $alert = Alert::create($data);
+            return response()->json($alert, 201);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'Database error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show(Alert $alert)
@@ -32,13 +41,30 @@ class AlertController extends Controller
 
     public function update(Request $request, Alert $alert)
     {
-        $alert->update($request->all());
-        return $alert;
+       $data = $request->validate([
+            'personnel_id' => 'nullable|exists:personnels,id',
+            'alert_type' => 'sometimes|in:Document,Training,Medical,Leave,Attendance',
+            'description' => 'sometimes|string',
+            'alert_date' => 'sometimes|date',
+            'resolved' => 'nullable|boolean',
+        ]);
+
+        try {
+            $alert->update($data);
+            return response()->json($alert);
+        } catch (QueryException $e) {
+            return response()->json([
+                'message' => 'Database error',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Alert $alert)
     {
         $alert->delete();
-        return response()->json(null,204);
+        return response()->json([
+            'message' => 'Alert deleted successfully'
+        ]);
     }
 }

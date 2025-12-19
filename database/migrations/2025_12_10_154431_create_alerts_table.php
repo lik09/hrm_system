@@ -15,7 +15,6 @@ return new class extends Migration
         Schema::create('alerts', function (Blueprint $table) {
             $table->id();
             $table->foreignId('personnel_id')->nullable()->constrained()->onDelete('cascade');
-          //  $table->enum('alert_type',['Document','Training','Medical','Leave','Attendance']);
             $table->string('alert_type');
             
             $table->text('description');
@@ -32,6 +31,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $driver = DB::getDriverName();
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE alerts DROP CONSTRAINT IF EXISTS alert_type_check");
+        } elseif ($driver === 'mysql') {
+            DB::statement("ALTER TABLE alerts DROP CHECK alert_type_check");
+        }
         Schema::dropIfExists('alerts');
     }
 };

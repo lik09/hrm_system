@@ -50,7 +50,11 @@ class SkillController extends Controller
 
     public function destroy(Skill $skill)
     {
+        $deletedSkill = $skill->toArray();
         $skill->delete();
-        return response()->json(null,204);
+        return response()->json([
+            'deleted' => $deletedSkill,
+            'message' => "Skill deleted successfully!"
+        ], 200);
     }
 }

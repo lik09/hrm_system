@@ -12,6 +12,7 @@ export default defineConfig({
     ],
     base: '/', // use relative paths
     server: {
-        https: true, // optional for local dev HTTPS
+       https: true, // optional for local dev HTTPS  for hosting
+     // https: false,   // ✅ or just REMOVE server block for local for dev
     },
 });

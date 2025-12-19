@@ -13,17 +13,20 @@ return new class extends Migration
     {
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('personnel_id')->constrained()->onDelete('cascade');
-            $table->string('leave_type');
+            $table->foreignId('personnel_id')->constrained('personnels')->onDelete('cascade');
+            $table->foreignId('leave_type_id')->constrained('leave_types')->onDelete('cascade');
             $table->date('start_date');
             $table->date('end_date');
             $table->integer('leave_balance')->default(0);
-           
             $table->string('status')->default('pending');
-           
             $table->timestamps();
         });
-       DB::statement("ALTER TABLE leaves ADD CONSTRAINT leaves_status_check CHECK (status IN ('pending','approved','rejected'))");
+    // CHECK constraint (MySQL 8+ & PostgreSQL)
+        DB::statement("
+            ALTER TABLE leaves
+            ADD CONSTRAINT leaves_status_check
+            CHECK (status IN ('pending','approved','rejected'))
+        ");
     }
 
     /**
@@ -31,6 +34,14 @@ return new class extends Migration
      */
     public function down(): void
     {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE leaves DROP CONSTRAINT IF EXISTS leaves_status_check");
+        } elseif ($driver === 'mysql') {
+            DB::statement("ALTER TABLE leaves DROP CHECK leaves_status_check");
+        }
+
         Schema::dropIfExists('leaves');
     }
 };
