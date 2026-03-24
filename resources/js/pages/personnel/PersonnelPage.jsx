@@ -391,7 +391,7 @@ const onSubmit = async () => {
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ width: 350 }}>
               <Form.Item name="service_number" label="Service Number" rules={[{ required: true ,message:'pleace input service number'}]}>
-                <Input />
+                <Input  />
               </Form.Item>
               <Form.Item name="full_name_kh" label="Full Name (KH)" rules={[{ required: true ,message:'pleace input full name khmer'}]}>
                 <Input />

@@ -16,13 +16,14 @@ export const request = (url = "", method = "get", data = {}, isFormData = false)
     })
     .then(res => res.data)
     .catch(error => {
-        console.log("Axios Error:", error);
-       // ប្រសិនបើ backend return JSON message
-        if (error.response && error.response.data) {
-            throw error.response;  // <-- important, throw to catch block in React
-        } else {
-            throw error; // network error
-        }
+      //   console.log("Axios Error:", error);
+      //  // ប្រសិនបើ backend return JSON message
+      //   if (error.response && error.response.data) {
+      //       throw error.response;  // <-- important, throw to catch block in React
+      //   } else {
+      //       throw error; // network error
+      //   }
+       throw error; // network error
     });
 };
 

@@ -110,7 +110,7 @@ export default function AttendancePage() {
       dataIndex: "date",
       align: "center",
       render: (date) => dayjs(date).format("YYYY-MM-DD"),
-      align: "center"
+      // align: "center"
     },
     { title: "Status",
       dataIndex: "status",

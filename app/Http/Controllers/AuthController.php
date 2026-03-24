@@ -46,38 +46,73 @@ class AuthController extends Controller
     }
 
 
+    // public function login(Request $request)
+    // {
+    //     // 1️⃣ Validate request
+    //     $request->validate([
+    //         'username' => 'required|string',
+    //         'password' => 'required|string',
+    //     ]);
+
+    //     // 2️⃣ Find user by username
+    //     $user = User::where('username', $request->username)->first();
+    //         // dd([
+    //         //     'username_in_db' => $user?->username,
+    //         //     'password_correct' => $user ? Hash::check($request->password, $user->password) : null,
+    //         //     'request_password' => $request->password,
+    //         // ]);
+    //     if (!$user || !Hash::check($request->password, $user->password)) {
+    //         return response()->json([
+    //             'message' => 'Invalid username or password'
+    //         ], 401);
+    //     }
+
+    //     // 3️⃣ Revoke old tokens (optional but recommended)
+    //     $user->tokens()->delete();
+
+    //     // 4️⃣ Create new token
+    //     $token = $user->createToken('react-token')->plainTextToken;
+
+    //     // 5️⃣ Return response
+    //     return response()->json([
+    //         'token' => $token,
+    //         'user'  => $user,
+    //     ]);
+    // }
+
     public function login(Request $request)
     {
-        // 1️⃣ Validate request
+        // 1️⃣ Validate input
         $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        // 2️⃣ Find user by username
+        // 2️⃣ Find user
         $user = User::where('username', $request->username)->first();
-            // dd([
-            //     'username_in_db' => $user?->username,
-            //     'password_correct' => $user ? Hash::check($request->password, $user->password) : null,
-            //     'request_password' => $request->password,
-            // ]);
+
+        // 3️⃣ Check username & password
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid username or password'
             ], 401);
         }
 
-        // 3️⃣ Revoke old tokens (optional but recommended)
-        $user->tokens()->delete();
+        // 4️⃣ Check is_active
+        if ($user->is_active != 1) {
+            return response()->json([
+                'message' => 'Your account is inactive. Please contact administrator.'
+            ], 403);
+        }
 
-        // 4️⃣ Create new token
-        $token = $user->createToken('react-token')->plainTextToken;
+        // 5️⃣ Generate token (Laravel Sanctum)
+        $token = $user->createToken('auth_token')->plainTextToken;
 
-        // 5️⃣ Return response
+        // 6️⃣ Return response
         return response()->json([
             'token' => $token,
-            'user'  => $user,
-        ]);
+            'user' => $user
+        ], 200);
     }
 
     /**
